@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "cma-proxy.fullname" . }}
+  labels:
+    app: {{ include "cma-proxy.name" . }}
+    chart: {{ include "cma-proxy.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ .Values.service.port }}
+      protocol: TCP
+  selector:
+    app: {{ include "cma-proxy.name" . }}
+    release: {{ .Release.Name }}

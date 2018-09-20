@@ -1,0 +1,50 @@
+replicaCount: 1
+
+image:
+  nginx:
+    repository: nginx
+    tag: stable
+    pullPolicy: IfNotPresent
+  kubectl:
+    repository: lachlanevenson/k8s-kubectl
+    tag: v1.10.8
+    pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+# kubeproxy, restapi or transparent
+mode: kubeproxy
+
+# secret and secretkey are only needed for kubeproxy mode
+# endpoint is only needed for restapi mode
+clusters: []
+  # - id: customercluster
+  #   scheme: https
+  #   secret: customerclustersecret 
+  #   secretkey: kubeconfig
+  #   endoint: 1.2.3.4
+  # - id: othercustomercluster
+  #   scheme: https
+  #   secret: othercustomerclustersecret 
+  #   secretkey: kubeconfig
+  #   endoint: 1.2.3.5
+
+# only used for kubeproxy mode
+# htpasswd usernmae:password pair
+basicAuth: 
+
+service:
+  basePort: 8000
+  type: LoadBalancer
+  port: 80
+
+resources: 
+  nginx: {}
+  kubectl: {}
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

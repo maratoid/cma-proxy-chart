@@ -1,0 +1,86 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: {{ include "cma-proxy.fullname" . }}
+  labels:
+    app: {{ include "cma-proxy.name" . }}
+    chart: {{ include "cma-proxy.chart" . }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ include "cma-proxy.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "cma-proxy.name" . }}
+        release: {{ .Release.Name }}
+    spec:
+      containers:
+        - name: nginx
+          image: "{{ .Values.image.nginx.repository }}:{{ .Values.image.nginx.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          volumeMounts:
+            - name: nginx-proxy-config
+              mountPath: /etc/nginx/conf.d
+{{- if eq .Values.mode "kubeproxy" }}
+{{- if .Values.basicAuth }}
+            - name: basic-auth
+              mountPath: /etc/nginx/basicauth
+{{- end }}
+{{- end }}
+          resources:
+{{ toYaml .Values.resources.nginx | indent 12 }}
+{{- if eq .Values.mode "kubeproxy" }}
+{{- range $index, $cluster := .Values.clusters }}
+        - name: proxy-{{ $cluster.id }}
+          image: "{{ $.Values.image.kubectl.repository }}:{{ $.Values.image.kubectl.tag }}"
+          imagePullPolicy: {{ $.Values.image.pullPolicy }}
+          command: ["kubectl"]
+          args: ["proxy", "--port={{ add $.Values.service.basePort $index }}", "--kubeconfig=/kubernetes/{{ $cluster.secretkey }}"]
+          ports:
+            - containerPort: {{ add $.Values.service.basePort $index }}
+              protocol: TCP
+          volumeMounts:
+            - name: proxy-{{ $cluster.id }}
+              mountPath: /kubernetes
+          resources:
+{{ toYaml $.Values.resources.kubectl | indent 12 }}
+{{- end }}
+{{- end }}
+      volumes:
+        - name: nginx-proxy-config
+          configMap:
+            name: {{ include "cma-proxy.fullname" . }}
+{{- if eq .Values.mode "kubeproxy" }}
+{{- if .Values.basicAuth }}
+        - name: basic-auth
+          secret:
+            secretName: {{ include "cma-proxy.fullname" . }}
+{{- end }}
+{{- end }}
+{{- if eq .Values.mode "kubeproxy" }}
+{{- range $index, $cluster := .Values.clusters }}
+        - name: proxy-{{ $cluster.id }}
+          secret:
+            secretName: {{ $cluster.secret }}
+{{- end }}
+{{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}

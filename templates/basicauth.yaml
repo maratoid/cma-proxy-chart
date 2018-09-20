@@ -1,0 +1,11 @@
+{{- if eq .Values.mode "kubeproxy" }}
+{{- if .Values.basicAuth }}
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "cma-proxy.fullname" . }}
+type: Opaque
+data:
+  .htpasswd: {{ .Values.basicAuth | b64enc }}
+{{- end }}
+{{- end }}
