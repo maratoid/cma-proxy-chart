@@ -23,7 +23,7 @@ clusters:
 ```
 * setup `basicAuth` key
 * install chart
-* query remote cluster like so: 'curl http://<external service ip>/cluster-id/api/v1/pods -u user:pass'
+* query remote cluster like so: 'curl http://external service ip/cluster-id/api/v1/pods -u user:pass'
 
 ## With Nginx, bearer tokens and known K8s API endpoint array
 
@@ -37,9 +37,9 @@ clusters:
 ```
 
 * install chart
-* query remote cluster like so: 'curl http://<external service ip>/cluster-id/api/v1/pods --header "Authorization: Bearer <YOUR BEARER TOKEN>"'
+* query remote cluster like so: 'curl http://[external service ip]/cluster-id/api/v1/pods --header "Authorization: Bearer YOUR BEARER TOKEN"'
 
 ## With Ngninx, bearer tokens and `X-Target-Cluster` custom header
 
 * install chart
-* query remote cluster like so: 'curl http://<external service ip>/cluster-id/api/v1/pods --header "Authorization: Bearer <YOUR BEARER TOKEN>" --header "X-Target-Cluster: <YOUR API ENDPOINT>"'
+* query remote cluster like so: 'curl http://[external service ip]/cluster-id/api/v1/pods --header "Authorization: Bearer [YOUR BEARER TOKEN]" --header "X-Target-Cluster: YOUR API ENDPOINT"'
